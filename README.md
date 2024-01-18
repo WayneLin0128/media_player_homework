@@ -1,6 +1,10 @@
 # media_player_homework
 
-A new Flutter project.
+A Flutter project that building a vedio player for windows platform with play/pause/stop button and slider(seekBar) using media_kit package and riverpod.
+
+using package:
+* [media_kit](https://pub.dev/packages/media_kit)
+* [riverpod](https://riverpod.dev/)
 
 ## Getting Started
 
