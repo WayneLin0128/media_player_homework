@@ -6,6 +6,8 @@ using package:
 * [media_kit](https://pub.dev/packages/media_kit)
 * [riverpod](https://riverpod.dev/)
 
+![Alt text]("/demo/Demo.jpg")
+
 ## Getting Started
 
 This project is a starting point for a Flutter application.
