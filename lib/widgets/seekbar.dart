@@ -1,127 +1,129 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:media_kit/media_kit.dart';
 
-import 'package:media_player_homework/provider/player_state.dart';
-
-// class SeekBar extends StatefulWidget {
-//   final Player player;
-//   const SeekBar({
-//     Key? key,
-//     required this.player,
-//   }) : super(key: key);
-
-//   @override
-//   State<SeekBar> createState() => _SeekBarState();
-// }
-
-class SeekBar extends ConsumerWidget {
-  SeekBar({super.key});
-  bool seeking = true;
+class SeekBar extends StatefulWidget {
+  final Player player;
+  const SeekBar({
+    Key? key,
+    required this.player,
+  }) : super(key: key);
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    // late Duration position = widget.player.state.position;
-    final playerRef = ref.read(playerStateProvider);
-    Duration position = playerRef.player.state.position;
-    // playerRef.init();
+  State<SeekBar> createState() => _SeekBarState();
+}
 
-    return WillPopScope(
-      onWillPop: () async {
-        return true;
-      },
-      child: SingleChildScrollView(
-        child: Column(
-          children: [
-            // const SizedBox(height: 16.0),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                // const SizedBox(width: 24.0),
-                Expanded(
-                  flex: 1,
-                  child: IconButton(
-                    onPressed: ref.read(playerStateProvider).onPlay,
-                    icon: Icon(
-                      ref.read(playerStateProvider).isPlaying
-                          ? Icons.pause
-                          : Icons.play_arrow,
+class _SeekBarState extends State<SeekBar> {
+  late bool playing = widget.player.state.playing;
+  late Duration position = widget.player.state.position;
+  late Duration duration = widget.player.state.duration;
+  late Duration buffer = widget.player.state.buffer;
+
+  bool seeking = false;
+
+  List<StreamSubscription> subscriptions = [];
+
+  @override
+  void initState() {
+    super.initState();
+    playing = widget.player.state.playing;
+    position = widget.player.state.position;
+    duration = widget.player.state.duration;
+    buffer = widget.player.state.buffer;
+    subscriptions.addAll(
+      [
+        widget.player.stream.playing.listen((event) {
+          setState(() {
+            playing = event;
+          });
+        }),
+        widget.player.stream.completed.listen((event) {
+          setState(() {
+            position = Duration.zero;
+          });
+        }),
+        widget.player.stream.position.listen((event) {
+          setState(() {
+            if (!seeking) position = event;
+          });
+        }),
+        widget.player.stream.duration.listen((event) {
+          setState(() {
+            duration = event;
+          });
+        }),
+      ],
+    );
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    for (final s in subscriptions) {
+      s.cancel();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              IconButton(
+                onPressed: widget.player.playOrPause,
+                icon: Icon(
+                  playing ? Icons.pause : Icons.play_arrow,
+                ),
+                color: Theme.of(context).primaryColor,
+                iconSize: 36.0,
+              ),
+              IconButton(
+                onPressed: () {
+                  // widget.player.stop();
+                  widget.player.pause();
+                  widget.player.seek(
+                    const Duration(
+                      minutes: 0,
+                      seconds: 0,
                     ),
-                    color: Theme.of(context).primaryColor,
-                    iconSize: 36.0,
-                  ),
+                  );
+                },
+                icon: const Icon(
+                  Icons.stop,
                 ),
-                Expanded(
-                  flex: 1,
-                  child: IconButton(
-                    onPressed: ref.read(playerStateProvider).onStop,
-                    icon: const Icon(
-                      Icons.stop,
-                    ),
-                    color: Theme.of(context).primaryColor,
-                    iconSize: 36.0,
-                  ),
+                color: Theme.of(context).primaryColor,
+                iconSize: 36.0,
+              ),
+              Expanded(
+                child: Slider(
+                  min: 0.0,
+                  max: duration.inMilliseconds.toDouble(),
+                  value: position.inMilliseconds.toDouble().clamp(
+                        0.0,
+                        duration.inMilliseconds.toDouble(),
+                      ),
+                  onChangeStart: (e) {
+                    seeking = true;
+                  },
+                  onChanged: position.inMilliseconds > 0
+                      ? (e) {
+                          setState(() {
+                            position = Duration(milliseconds: e ~/ 1);
+                          });
+                        }
+                      : null,
+                  onChangeEnd: (e) {
+                    seeking = false;
+                    widget.player.seek(Duration(milliseconds: e ~/ 1));
+                  },
                 ),
-                // const SizedBox(width: 24.0),
-                Text(ref
-                    .read(playerStateProvider)
-                    .player
-                    .state
-                    .position
-                    .toString()
-                    .substring(2, 7)),
-                Expanded(
-                  flex: 8,
-                  child: Slider(
-                    min: 0.0,
-                    max: ref
-                        .read(playerStateProvider)
-                        .player
-                        .state
-                        .position
-                        .inMilliseconds
-                        .toDouble()
-                        .clamp(
-                          0.0,
-                          ref
-                              .read(playerStateProvider)
-                              .player
-                              .state
-                              .duration
-                              .inMilliseconds
-                              .toDouble(),
-                        ),
-                    value: ref.watch(playerStateProvider).seekbarValue,
-                    // secondaryTrackValue: playerRef
-                    //     .player.state.buffer.inMilliseconds
-                    //     .toDouble()
-                    //     .clamp(
-                    //       0.0,
-                    //       playerRef.player.state.duration.inMilliseconds
-                    //           .toDouble(),
-                    //     ),
-                    // onChangeStart: (e) {
-                    //   seeking = true;
-                    // },
-                    onChanged: ref.read(playerStateProvider).changeSeekbar,
-                    // playerRef.player.state.position.inMilliseconds > 0
-                    //     ? (e) {
-                    //         position = Duration(milliseconds: e ~/ 1);
-                    //       }
-                    //     : null,
-                    // onChangeEnd: (e) {
-                    //   seeking = true;
-                    //   playerRef.player.seek(Duration(milliseconds: e ~/ 1));
-                    // },
-                  ),
-                ),
-                Text(playerRef.duration.toString().substring(2, 7)),
-                const SizedBox(width: 24.0),
-              ],
-            )
-          ],
-        ),
+              ),
+            ],
+          )
+        ],
       ),
     );
   }
