@@ -1,23 +1,18 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:media_kit/media_kit.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:media_player_homework/provider/player_provider.dart';
 
-class SeekBar extends StatefulWidget {
-  final Player player;
-  const SeekBar({
-    Key? key,
-    required this.player,
-  }) : super(key: key);
+class SeekBar extends ConsumerStatefulWidget {
+  const SeekBar({super.key});
 
   @override
-  State<SeekBar> createState() => _SeekBarState();
+  SeekBarState createState() => SeekBarState();
 }
 
-class _SeekBarState extends State<SeekBar> {
-  late bool playing = widget.player.state.playing;
-  late Duration position = widget.player.state.position;
-  late Duration duration = widget.player.state.duration;
-  late Duration buffer = widget.player.state.buffer;
+class SeekBarState extends ConsumerState<SeekBar> {
+  late Duration position = ref.read(playerProvider).state.position;
+  late Duration duration = ref.read(playerProvider).state.duration;
 
   bool seeking = false;
 
@@ -26,30 +21,20 @@ class _SeekBarState extends State<SeekBar> {
   @override
   void initState() {
     super.initState();
-    playing = widget.player.state.playing;
-    position = widget.player.state.position;
-    duration = widget.player.state.duration;
-    buffer = widget.player.state.buffer;
+    position = ref.read(playerProvider).state.position;
+    duration = ref.read(playerProvider).state.duration;
     subscriptions.addAll(
       [
-        widget.player.stream.playing.listen((event) {
-          setState(() {
-            playing = event;
-          });
-        }),
-        widget.player.stream.completed.listen((event) {
-          setState(() {
-            position = Duration.zero;
-          });
-        }),
-        widget.player.stream.position.listen((event) {
+        ref.read(playerProvider).stream.position.listen((event) {
           setState(() {
             if (!seeking) position = event;
+            // debugPrint('position: $position');
           });
         }),
-        widget.player.stream.duration.listen((event) {
+        ref.read(playerProvider).stream.duration.listen((event) {
           setState(() {
             duration = event;
+            // debugPrint('duration: $duration');
           });
         }),
       ],
@@ -66,64 +51,28 @@ class _SeekBarState extends State<SeekBar> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              IconButton(
-                onPressed: widget.player.playOrPause,
-                icon: Icon(
-                  playing ? Icons.pause : Icons.play_arrow,
-                ),
-                color: Theme.of(context).primaryColor,
-                iconSize: 36.0,
-              ),
-              IconButton(
-                onPressed: () {
-                  // widget.player.stop();
-                  widget.player.pause();
-                  widget.player.seek(
-                    const Duration(
-                      minutes: 0,
-                      seconds: 0,
-                    ),
-                  );
-                },
-                icon: const Icon(
-                  Icons.stop,
-                ),
-                color: Theme.of(context).primaryColor,
-                iconSize: 36.0,
-              ),
-              Expanded(
-                child: Slider(
-                  min: 0.0,
-                  max: duration.inMilliseconds.toDouble(),
-                  value: position.inMilliseconds.toDouble().clamp(
-                        0.0,
-                        duration.inMilliseconds.toDouble(),
-                      ),
-                  onChangeStart: (e) {
-                    seeking = true;
-                  },
-                  onChanged: position.inMilliseconds > 0
-                      ? (e) {
-                          setState(() {
-                            position = Duration(milliseconds: e ~/ 1);
-                          });
-                        }
-                      : null,
-                  onChangeEnd: (e) {
-                    seeking = false;
-                    widget.player.seek(Duration(milliseconds: e ~/ 1));
-                  },
-                ),
-              ),
-            ],
-          )
-        ],
+    return Expanded(
+      child: Slider(
+        min: 0.0,
+        max: duration.inMilliseconds.toDouble(),
+        value: position.inMilliseconds.toDouble().clamp(
+              0.0,
+              duration.inMilliseconds.toDouble(),
+            ),
+        onChangeStart: (e) {
+          seeking = true;
+        },
+        onChanged: position.inMilliseconds > 0
+            ? (e) {
+                setState(() {
+                  position = Duration(milliseconds: e ~/ 1);
+                });
+              }
+            : null,
+        onChangeEnd: (e) {
+          seeking = false;
+          ref.read(playerProvider).seek(Duration(milliseconds: e ~/ 1));
+        },
       ),
     );
   }
