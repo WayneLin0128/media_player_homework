@@ -1,37 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:media_kit/media_kit.dart';
 
 import 'package:media_player_homework/provider/player_provider.dart';
 
-class PlayPauseButton extends ConsumerStatefulWidget {
-  const PlayPauseButton({
-    super.key,
-  });
+class PlayPauseButton extends ConsumerWidget {
+  final Player player;
+  const PlayPauseButton({Key? key, required this.player}) : super(key: key);
 
   @override
-  PlayPauseButtonState createState() => PlayPauseButtonState();
-}
-
-class PlayPauseButtonState extends ConsumerState<PlayPauseButton> {
-  late bool playing = ref.watch(playerProvider).state.playing;
-  @override
-  void initState() {
-    super.initState();
-    playing = ref.read(playerProvider).state.playing;
-    ref.read(playerProvider).stream.playing.listen((event) {
-      setState(() {
-        playing = event;
-      });
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    debugPrint("Build PlayPauseButton!");
+    final playingStateWatch = ref.watch(playingProvider);
+    final playingStateRead = ref.read(playingProvider.notifier);
     return IconButton(
-      onPressed: () => ref.read(playerProvider).playOrPause(),
-      icon: Icon(
-        playing ? Icons.pause : Icons.play_arrow,
-      ),
+      onPressed: () {
+        playingStateRead.playOrPause(player);
+        player.playOrPause();
+      },
+      icon: Icon(playingStateWatch ? Icons.pause : Icons.play_arrow),
       color: Theme.of(context).primaryColor,
       iconSize: 36.0,
     );
