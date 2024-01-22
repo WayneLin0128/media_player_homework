@@ -5,7 +5,6 @@ import 'package:media_kit/media_kit.dart';
 import 'package:media_player_homework/provider/player_provider.dart';
 
 class StopButton extends ConsumerWidget {
-  // const StopButton({super.key});
   final Player player;
   const StopButton({Key? key, required this.player}) : super(key: key);
 

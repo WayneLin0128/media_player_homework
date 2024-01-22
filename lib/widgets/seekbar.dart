@@ -5,7 +5,6 @@ import 'package:media_kit/media_kit.dart';
 import 'package:media_player_homework/provider/player_provider.dart';
 
 class SeekBar extends ConsumerWidget {
-  // const SeekBar({super.key});
   final Player player;
   const SeekBar({Key? key, required this.player}) : super(key: key);
 
