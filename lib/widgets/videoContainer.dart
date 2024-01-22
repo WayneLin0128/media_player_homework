@@ -15,6 +15,7 @@ class VideoContainer extends ConsumerWidget {
     final positionRead = ref.read(positionProvider.notifier);
     final playingStateRead = ref.read(playingProvider.notifier);
     player.stream.position.listen((event) {
+<<<<<<< HEAD
       positionRead.setProgress(event.inMilliseconds.toDouble());
       debugPrint('Position: ${event.inMilliseconds.toDouble()}');
     });
@@ -23,6 +24,16 @@ class VideoContainer extends ConsumerWidget {
         playingStateRead.playOrPause(player);
       }
     });
+=======
+        positionRead.setProgress(event.inMilliseconds.toDouble());
+        debugPrint('Position: ${event.inMilliseconds.toDouble()}');
+      });
+      player.stream.completed.listen((event) {
+        if(event) {
+          playingStateRead.playOrPause(player);
+        }
+      });
+>>>>>>> 4105ae69544d472ed35bb76455bb49800fdb7bcf
     return Container(
       alignment: Alignment.center,
       child: Video(
