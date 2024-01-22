@@ -20,11 +20,7 @@ class SeekBar extends ConsumerWidget {
         max: player.state.duration.inMilliseconds.toDouble(),
         value: positionWatch,
         onChangeStart: (double position) {
-<<<<<<< HEAD
-          if (ref.read(playingProvider)) {
-=======
           if(ref.read(playingProvider)){
->>>>>>> 4105ae69544d472ed35bb76455bb49800fdb7bcf
             player.pause();
           }
         },
@@ -32,15 +28,8 @@ class SeekBar extends ConsumerWidget {
           positionRead.changeSeekbar(position);
         },
         onChangeEnd: (double position) {
-<<<<<<< HEAD
-          player.seek(Duration(
-              seconds: position ~/ 1000,
-              milliseconds: (position % 1000).toInt()));
-          if (ref.read(playingProvider)) {
-=======
           player.seek(Duration(seconds: position ~/ 1000, milliseconds: (position % 1000).toInt()));
           if(ref.read(playingProvider)) {
->>>>>>> 4105ae69544d472ed35bb76455bb49800fdb7bcf
             player.play();
           }
         },
