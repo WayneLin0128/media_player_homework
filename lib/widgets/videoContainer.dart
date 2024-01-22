@@ -11,18 +11,18 @@ class VideoContainer extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    print("Build VideoContainer!");
+    debugPrint("Build VideoContainer!");
     final positionRead = ref.read(positionProvider.notifier);
     final playingStateRead = ref.read(playingProvider.notifier);
     player.stream.position.listen((event) {
-        positionRead.setProgress(event.inMilliseconds.toDouble());
-        debugPrint('Position: ${event.inMilliseconds.toDouble()}');
-      });
-      player.stream.completed.listen((event) {
-        if(event) {
-          playingStateRead.playOrPause(player);
-        }
-      });
+      positionRead.setProgress(event.inMilliseconds.toDouble());
+      debugPrint('Position: ${event.inMilliseconds.toDouble()}');
+    });
+    player.stream.completed.listen((event) {
+      if (event) {
+        playingStateRead.playOrPause(player);
+      }
+    });
     return Container(
       alignment: Alignment.center,
       child: Video(
