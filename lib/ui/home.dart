@@ -17,7 +17,11 @@ class HomeScreen extends StatelessWidget {
     player.setVolume(70);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Media player'),
+        title: const Text(
+          'Media player',
+          style: TextStyle(color: Colors.white),
+        ),
+        backgroundColor: Colors.blue,
       ),
       body: Column(
         children: [
